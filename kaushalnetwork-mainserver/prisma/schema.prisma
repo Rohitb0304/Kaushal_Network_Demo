@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  brandName String   @unique
+  companyId Int
+  deleted   Boolean  @default(false)
+  Company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model Buzz {
+  id            Int         @id @default(autoincrement())
+  title         String
+  textContent   String
+  companyUserId Int
+  deleted       Boolean     @default(false)
+  CompanyUser   CompanyUser @relation(fields: [companyUserId], references: [id], onDelete: Cascade)
+  BuzzAssets    BuzzAsset[]
+}
+
+model BuzzAsset {
+  id        Int     @id @default(autoincrement())
+  assetType String
+  assetUrl  String
+  buzzId    Int
+  deleted   Boolean @default(false)
+  Buzz      Buzz    @relation(fields: [buzzId], references: [id], onDelete: Cascade)
+}
+
+model City {
+  name String @id
+}
+
+model Company {
+  id                        Int       @id @default(autoincrement())
+  verified                  Boolean   @default(false)
+  tradeName                 String
+  legalName                 String
+  companyType               String
+  email                     String    @unique
+  logoUrl                   String
+  bannerUrl                 String?
+  tagline                   String?
+  registeredOfficeAddress   String
+  websiteUrl                String?
+  businessType              String
+  sector                    String
+  industry                  String
+  minEmployeeCount          Int
+  maxEmployeeCount          Int
+  msmeRegistrationNumber    String
+  cin                       String
+  cinDocumentUrl            String?
+  pan                       String
+  panUrl                    String?
+  gstin                     String
+  gstinDocumentUrl          String?
+  tradeLicenseNumber        String?
+  tradeLicenseDocumentUrl   String?
+  iecNumber                 String?
+  iecDocumentUrl            String?
+  aadharNumber              String
+  aadharDocumentUrl         String?
+  aboutCompany              String?
+  aboutFounderAndTeam       String?
+  expertise                 String?
+  companyName               String    @unique
+  entityType                String
+  msmeRegistrationDocumentUrl String?
+  incorporationYear         Int
+  deleted                   Boolean   @default(false)
+  annualTurnover            String?
+  businessActivites         String?
+  certifications            String?
+  importExportCode          String?
+  majorMarkets              String?
+  operationLocations        String?
+  qualityStandards          String?
+  Brands                    Brand[]
+  CompanyBranches           CompanyBranch[]
+  CompanyUsers              CompanyUser[]
+  Tenders                   Tender[]
+  TenderApplications        TenderApplication[]
+  ProductAndServices        ProductAndService[]
+}
+
+model ProductAndService {
+  id                  Int      @id @default(autoincrement())
+  name                String
+  description         String
+  imageUrl            String
+  priceExclusiveGST   BigInt
+  gstApplicable       Boolean
+  modelNumber         String
+  companyId           Int
+  Company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model CompanyBranch {
+  id            Int     @id @default(autoincrement())
+  branchAddress String
+  companyId     Int
+  deleted       Boolean @default(false)
+  Company       Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model CompanyUser {
+  id              Int         @id @default(autoincrement())
+  username        String      @unique
+  password        String
+  name            String
+  designation     String
+  email           String      @unique
+  countryCode     String
+  companyId       Int
+  emailOtp        String?
+  emailOtpExpiry  DateTime?
+  mobileOtp       String?
+  mobileOtpExpiry DateTime?
+  contactNumber   String
+  deleted         Boolean     @default(false)
+  admin           Boolean     @default(false)
+  Buzzs           Buzz[]
+  ChatUsers       ChatUser[]
+  Company         Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  imageUrl        String?
+}
+
+model Country {
+  name        String @id
+  iso3        String
+  countryCode String
+}
+
+model State {
+  name String @id
+}
+
+model SuperAdmin {
+  id       Int    @id @default(1)
+  email    String @unique
+  username String @unique
+  password String
+}
+
+model Tender {
+  id                        Int         @id @default(autoincrement())
+  tenderName                String      @unique
+  modelNumber               Int?        @unique
+  objective                 String
+  description               String
+  productsAndServicesRequired String
+  aboutProductsAndServices  String
+  nomenclature              String
+  pricingCategory           String
+  locationOfService         String
+  deliveryTerms             String
+  paymentTerms              String
+  otherConditions           String
+  companyId                 Int
+  totalPrice                BigInt
+  deleted                   Boolean     @default(false)
+  Company                   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  TenderApplications        TenderApplication[]
+}
+
+model TenderApplication {
+  id            Int     @id @default(autoincrement())
+  tenderId      Int
+  companyId     Int
+  modelNumber   Int?
+  deleted       Boolean @default(false)
+  proposedPrice BigInt
+  Company       Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  Tender        Tender  @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+
+  @@unique([tenderId, companyId])
+}
+
+model Chat {
+  id        Int        @id @default(autoincrement())
+  ChatUsers ChatUser[]
+}
+
+model ChatMessage {
+  id         Int      @id @default(autoincrement())
+  chatUserId Int
+  message    String
+  createdAt  DateTime @default(now())
+  seen       Boolean  @default(false)
+  ChatUser   ChatUser @relation(fields: [chatUserId], references: [id], onDelete: Cascade)
+}
+
+model ChatUser {
+  id           Int         @id @default(autoincrement())
+  chatId       Int
+  userId       Int
+  ChatMessages ChatMessage[]
+  Chat         Chat        @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  CompanyUser  CompanyUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EcommerceUser {
+  id               Int       @id @default(autoincrement())
+  ecommerceName    String
+  fullName         String
+  phoneNumber      String
+  email            String    @unique
+  password         String
+  isPaid           Boolean   @default(false) // Added: a boolean to track payment status
+  razorpayPaymentId String?  @unique // Added: to store the unique payment ID
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}

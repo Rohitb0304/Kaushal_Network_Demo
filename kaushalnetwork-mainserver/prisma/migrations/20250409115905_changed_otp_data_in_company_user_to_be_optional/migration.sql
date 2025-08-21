@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "CompanyUser" ALTER COLUMN "emailOtp" DROP NOT NULL,
+ALTER COLUMN "emailOtpExpiry" DROP NOT NULL,
+ALTER COLUMN "mobileOtp" DROP NOT NULL,
+ALTER COLUMN "mobileOtpExpiry" DROP NOT NULL;
